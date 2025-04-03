@@ -21,7 +21,7 @@
     "tailwind-merge": "^1.9.0",
     "@radix-ui/react-accordion": "^1.0.0",
     "@radix-ui/react-alert-dialog": "^1.0.0",
-    "class-variance-authority": "^1.0.0",
+    "class-variance-authority": "",
     "@radix-ui/react-aspect-ratio": "^1.0.0",
     "@radix-ui/react-avatar": "^1.0.0",
     "@radix-ui/react-slot": "^1.0.0",
