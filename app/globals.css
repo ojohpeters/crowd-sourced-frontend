@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Optional: Add font-face declaration if you want to host Inter locally later */
+@layer base {
+  html {
+    font-family: "Inter", system-ui, sans-serif;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

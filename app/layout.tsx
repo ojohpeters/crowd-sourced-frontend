@@ -1,12 +1,11 @@
 import type React from "react"
-import { Inter } from "next/font/google"
 import "./globals.css"
 import { Providers } from "./providers"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { Toaster } from "@/components/ui/toaster"
 
-const inter = Inter({ subsets: ["latin"] })
+// Remove the Google font import and use system fonts instead
 
 // Update the metadata
 export const metadata = {
@@ -30,7 +29,7 @@ export default function RootLayout({
           crossOrigin=""
         />
       </head>
-      <body className={inter.className}>
+      <body className="font-sans">
         <Providers>
           <div className="flex min-h-screen flex-col">
             <Header />
