@@ -5,11 +5,13 @@ import Link from "next/link"
 
 export default function PendingApprovalPage() {
   return (
-    <div className="container flex items-center justify-center min-h-[calc(100vh-8rem)] py-12">
-      <Card className="w-full max-w-md text-center">
+    <div className="container flex items-center justify-center min-h-[calc(100vh-8rem)] py-12 px-4">
+      <Card className="w-full max-w-md text-center border-0 shadow-lg">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
-            <CheckCircle2 className="h-16 w-16 text-amber-500" />
+            <div className="bg-amber-50 p-4 rounded-full">
+              <CheckCircle2 className="h-12 w-12 text-amber-500" />
+            </div>
           </div>
           <CardTitle className="text-2xl font-bold">Application Submitted</CardTitle>
           <CardDescription>Your responder application is pending approval</CardDescription>
@@ -24,7 +26,7 @@ export default function PendingApprovalPage() {
           </p>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <Button asChild>
+          <Button asChild className="px-8">
             <Link href="/">Return to Home</Link>
           </Button>
         </CardFooter>

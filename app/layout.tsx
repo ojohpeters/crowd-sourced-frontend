@@ -8,8 +8,9 @@ import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
 
+// Update the metadata
 export const metadata = {
-  title: "Emergency Response System",
+  title: "CrowdSourced | Emergency Response System",
   description: "Crowd-Sourced Emergency Response System",
 }
 

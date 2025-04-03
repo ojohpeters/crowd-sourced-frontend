@@ -478,11 +478,11 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="container py-6 md:py-10 px-2 sm:px-4">
+    <div className="container py-6 md:py-10 px-4">
       <h1 className="text-2xl md:text-3xl font-bold mb-6">Admin Dashboard</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-4">
           <TabsTrigger value="responders">Responders</TabsTrigger>
           <TabsTrigger value="emergencies">Emergencies</TabsTrigger>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>

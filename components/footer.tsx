@@ -8,10 +8,10 @@ export default function Footer() {
         <div className="flex flex-col items-center gap-2 md:items-start">
           <Link href="/" className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-red-500" />
-            <span className="text-lg font-bold">EmergencyResponse</span>
+            <span className="text-lg font-bold">CrowdSourced</span>
           </Link>
           <p className="text-center text-sm text-muted-foreground md:text-left">
-            &copy; {new Date().getFullYear()} Emergency Response System. All rights reserved.
+            &copy; {new Date().getFullYear()} CrowdSourced Emergency Response. All rights reserved.
           </p>
         </div>
         <div className="flex gap-6">

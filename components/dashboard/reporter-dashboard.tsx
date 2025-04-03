@@ -259,11 +259,11 @@ export default function ReporterDashboard() {
   }
 
   return (
-    <div className="container py-6 md:py-10">
-      <h1 className="text-3xl font-bold mb-6">Reporter Dashboard</h1>
+    <div className="container py-6 md:py-10 px-4">
+      <h1 className="text-2xl md:text-3xl font-bold mb-6">Reporter Dashboard</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="report">Report Emergency</TabsTrigger>
           <TabsTrigger value="emergencies">My Reports</TabsTrigger>
           <TabsTrigger value="rewards">Rewards</TabsTrigger>

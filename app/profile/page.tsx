@@ -101,14 +101,16 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container flex items-center justify-center min-h-[calc(100vh-8rem)] py-12">
-      <Card className="w-full max-w-md">
+    <div className="container flex items-center justify-center min-h-[calc(100vh-8rem)] py-12 px-4">
+      <Card className="w-full max-w-md border-0 shadow-lg">
         <CardHeader className="space-y-1">
-          <div className="flex items-center space-x-2">
-            <User className="h-5 w-5 text-primary" />
-            <CardTitle className="text-2xl font-bold">My Profile</CardTitle>
+          <div className="flex items-center justify-center mb-2">
+            <div className="bg-red-50 p-3 rounded-full">
+              <User className="h-6 w-6 text-red-500" />
+            </div>
           </div>
-          <CardDescription>View and update your profile information</CardDescription>
+          <CardTitle className="text-2xl font-bold text-center">My Profile</CardTitle>
+          <CardDescription className="text-center">View and update your profile information</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -126,7 +128,7 @@ export default function ProfilePage() {
                 <Input
                   id="name"
                   name="name"
-                  className="pl-10"
+                  className="pl-10 h-11"
                   placeholder="John Doe"
                   value={formData.name}
                   onChange={handleChange}
@@ -143,7 +145,7 @@ export default function ProfilePage() {
                   id="email"
                   name="email"
                   type="email"
-                  className="pl-10"
+                  className="pl-10 h-11"
                   placeholder="name@example.com"
                   value={formData.email}
                   onChange={handleChange}
@@ -159,7 +161,7 @@ export default function ProfilePage() {
                 <Input
                   id="phone"
                   name="phone"
-                  className="pl-10"
+                  className="pl-10 h-11"
                   placeholder="08123456789"
                   value={formData.phone}
                   onChange={handleChange}
@@ -168,7 +170,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 p-3 bg-muted rounded-md">
+            <div className="flex items-center space-x-2 p-4 bg-muted rounded-md">
               <Shield className="h-5 w-5 text-primary" />
               <div>
                 <p className="text-sm font-medium">
@@ -178,7 +180,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-11" disabled={isSubmitting}>
               {isSubmitting ? "Updating..." : "Update Profile"}
             </Button>
           </form>

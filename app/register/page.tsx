@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import Link from "next/link"
+import { Users } from "lucide-react"
 
 export default function RegisterPage() {
   const searchParams = useSearchParams()
@@ -51,11 +52,16 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="container flex items-center justify-center min-h-[calc(100vh-8rem)] py-12">
-      <Card className="w-full max-w-md">
+    <div className="container flex items-center justify-center min-h-[calc(100vh-8rem)] py-12 px-4">
+      <Card className="w-full max-w-md border-0 shadow-lg">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-          <CardDescription>Enter your information to create an account</CardDescription>
+          <div className="flex justify-center mb-2">
+            <div className="bg-red-50 p-3 rounded-full">
+              <Users className="h-6 w-6 text-red-500" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
+          <CardDescription className="text-center">Join our community of emergency responders</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -75,6 +81,7 @@ export default function RegisterPage() {
                 value={formData.name}
                 onChange={handleChange}
                 required
+                className="h-11"
               />
             </div>
 
@@ -88,6 +95,7 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
                 required
+                className="h-11"
               />
             </div>
 
@@ -100,6 +108,7 @@ export default function RegisterPage() {
                 value={formData.phone}
                 onChange={handleChange}
                 required
+                className="h-11"
               />
             </div>
 
@@ -112,28 +121,37 @@ export default function RegisterPage() {
                 value={formData.password}
                 onChange={handleChange}
                 required
+                className="h-11"
               />
             </div>
 
             <div className="space-y-2">
               <Label>Account Type</Label>
-              <RadioGroup value={formData.role} onValueChange={handleRoleChange} className="flex flex-col space-y-1">
-                <div className="flex items-center space-x-2">
+              <RadioGroup
+                value={formData.role}
+                onValueChange={handleRoleChange}
+                className="flex flex-col space-y-2 mt-2"
+              >
+                <div className="flex items-center space-x-2 p-3 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors">
                   <RadioGroupItem value="reporter" id="reporter" />
-                  <Label htmlFor="reporter" className="cursor-pointer">
-                    Reporter - Report emergencies in your area
+                  <Label htmlFor="reporter" className="cursor-pointer flex-1">
+                    <div className="font-medium">Reporter</div>
+                    <div className="text-sm text-muted-foreground">Report emergencies in your area</div>
                   </Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 p-3 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors">
                   <RadioGroupItem value="responder" id="responder" />
-                  <Label htmlFor="responder" className="cursor-pointer">
-                    Responder - Verify and respond to emergencies (requires approval)
+                  <Label htmlFor="responder" className="cursor-pointer flex-1">
+                    <div className="font-medium">Responder</div>
+                    <div className="text-sm text-muted-foreground">
+                      Verify and respond to emergencies (requires approval)
+                    </div>
                   </Label>
                 </div>
               </RadioGroup>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full h-11" disabled={isSubmitting}>
               {isSubmitting ? "Creating account..." : "Register"}
             </Button>
           </form>
