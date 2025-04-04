@@ -35,7 +35,7 @@ export default function ProfilePage() {
       // Fetch user profile data
       const fetchProfile = async () => {
         try {
-          const response = await axios.get("/api/user")
+          const response = await axios.get("/user")
           const userData = response.data.user
           setFormData({
             name: userData.name || "",
@@ -67,7 +67,7 @@ export default function ProfilePage() {
     setError(null)
 
     try {
-      const response = await axios.put("/api/profile/update", formData)
+      const response = await axios.put("/profile/update", formData)
 
       toast({
         title: "Success",
