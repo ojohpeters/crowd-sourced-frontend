@@ -434,7 +434,7 @@ export default function AdminDashboard() {
               ) : rewardClaims.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Award className="mx-auto h-12 w-12 mb-4 text-muted-foreground" />
-                  <p>No reward claims to process.</p>
+                  <p>No reward claims to process...</p>
                 </div>
               ) : (
                 <div className="space-y-4">
