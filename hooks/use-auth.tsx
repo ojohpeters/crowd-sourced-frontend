@@ -68,10 +68,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (token && storedUser) {
       try {
-        setUser(JSON.parse(storedUser))
+        const parsedUser = JSON.parse(storedUser)
+        setUser(parsedUser)
+
+        // Log the admin status for debugging
+        console.log("User loaded from storage:", parsedUser)
+        console.log("is_admin value:", parsedUser.is_admin, "type:", typeof parsedUser.is_admin)
+        console.log("Normalized isAdmin:", normalizeBoolean(parsedUser.is_admin))
+
         // Verify token validity by fetching user profile
         fetchUserProfile(token)
       } catch (e) {
+        console.error("Error parsing stored user:", e)
         localStorage.removeItem("token")
         localStorage.removeItem("user")
         setUser(null)
@@ -90,10 +98,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       })
 
       // Update user data with the latest from the server
-      setUser(response.data.user)
-      localStorage.setItem("user", JSON.stringify(response.data.user))
+      const userData = response.data.user
+      setUser(userData)
+      localStorage.setItem("user", JSON.stringify(userData))
+
+      // Log the admin status for debugging
+      console.log("User fetched from API:", userData)
+      console.log("is_admin value:", userData.is_admin, "type:", typeof userData.is_admin)
+      console.log("Normalized isAdmin:", normalizeBoolean(userData.is_admin))
     } catch (err) {
       // Token might be invalid or expired
+      console.error("Error fetching user profile:", err)
       localStorage.removeItem("token")
       localStorage.removeItem("user")
       setUser(null)
@@ -105,10 +120,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await axios.post("/api/login", { email, password })
 
+      const userData = response.data.user
       localStorage.setItem("token", response.data.token)
-      localStorage.setItem("user", JSON.stringify(response.data.user))
+      localStorage.setItem("user", JSON.stringify(userData))
 
-      setUser(response.data.user)
+      // Log the admin status for debugging
+      console.log("User logged in:", userData)
+      console.log("is_admin value:", userData.is_admin, "type:", typeof userData.is_admin)
+      console.log("Normalized isAdmin:", normalizeBoolean(userData.is_admin))
+
+      setUser(userData)
       router.push("/dashboard")
     } catch (err: any) {
       if (err.response?.data?.error) {

@@ -25,13 +25,16 @@ export default function DashboardPage() {
     return null // Will redirect in useEffect
   }
 
-  // Render different dashboard based on user role
-  // First check if user is admin, regardless of role
+  // IMPORTANT: Admin check takes precedence over role
+  // If is_admin is true, always show admin dashboard regardless of role
   if (isAdmin) {
+    console.log("User is admin, showing admin dashboard")
     return <AdminDashboard />
   }
 
-  // If not admin, then check role
+  // Only check role if user is not an admin
+  console.log("User is not admin, checking role:", user.role)
+
   switch (user.role) {
     case "reporter":
       return <ReporterDashboard />
