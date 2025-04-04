@@ -26,11 +26,12 @@ export default function DashboardPage() {
   }
 
   // Render different dashboard based on user role
-  // Use isAdmin helper instead of directly checking user.is_admin
+  // First check if user is admin, regardless of role
   if (isAdmin) {
     return <AdminDashboard />
   }
 
+  // If not admin, then check role
   switch (user.role) {
     case "reporter":
       return <ReporterDashboard />
