@@ -1,90 +1,81 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-// Add imports for XCircle for decline functionality
 import {
   AlertCircle,
   MapPin,
   Clock,
   CheckCircle,
-  XCircle,
-  User,
-  Mail,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
-  AlertTriangle,
-  Flame,
-  Stethoscope,
-  Shield,
+  User,
+  Phone,
+  Mail,
+  Filter,
+  Search,
 } from "lucide-react"
-// Add import for getImageUrl
-import axios, { getImageUrl } from "@/lib/axios"
+import axios from "@/lib/axios"
 import { useToast } from "@/hooks/use-toast"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import EmergencyMap from "@/components/emergency-map"
+import EmergencyDetailModal from "@/components/emergency-detail-modal"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Progress } from "@/components/ui/progress"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
 
-// Update the type definition to include location_url
+// Helper function to normalize boolean values
+const normalizeBoolean = (value: boolean | number | undefined): boolean => {
+  if (value === undefined) return false
+  if (typeof value === "boolean") return value
+  return value === 1
+}
+
+type Reporter = {
+  id: number
+  name: string
+  email?: string
+  phone?: string
+}
+
 type Emergency = {
   id: number
   title: string
   description: string
   type: string
   status: string
-  location_link?: string
-  reporter: Reporter
+  coordinates: {
+    latitude: number
+    longitude: number
+  }
+  reporter?: Reporter
+  reporter_id?: number
+  reporter_name?: string
   photo_url?: string
   created_at: string
   updated_at?: string
-}
-
-type Reporter = {
-  id: number
-  name: string
-  email: string
-}
-
-// Type for emergency statistics
-type EmergencyStats = {
-  pending: number
-  verified: number
-  resolved: number
-  total: number
-  byType: {
-    accident: number
-    fire: number
-    medical: number
-    security: number
-    other: number
-  }
+  verified_by?: string
+  resolved_by?: string
 }
 
 export default function ResponderDashboard() {
-  const [activeTab, setActiveTab] = useState("overview")
+  const [activeTab, setActiveTab] = useState("map")
   const [emergencies, setEmergencies] = useState<Emergency[]>([])
+  const [filteredEmergencies, setFilteredEmergencies] = useState<Emergency[]>([])
   const [loading, setLoading] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const [selectedEmergency, setSelectedEmergency] = useState<Emergency | null>(null)
-  const [expandedItems, setExpandedItems] = useState<Record<number, boolean>>({})
-  const [stats, setStats] = useState<EmergencyStats>({
-    pending: 0,
-    verified: 0,
-    resolved: 0,
-    total: 0,
-    byType: {
-      accident: 0,
-      fire: 0,
-      medical: 0,
-      security: 0,
-      other: 0,
-    },
-  })
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [expandedEmergencyId, setExpandedEmergencyId] = useState<number | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string[]>(["pending", "verified"])
+  const [typeFilter, setTypeFilter] = useState<string[]>(["fire", "accident", "medical", "security", "other"])
   const { toast } = useToast()
 
   useEffect(() => {
@@ -96,54 +87,48 @@ export default function ResponderDashboard() {
     }, 30000) // Poll every 30 seconds
 
     return () => clearInterval(interval)
-  }, [activeTab])
+  }, [])
 
-  // Update the fetchEmergencies function to use the correct endpoint
+  // Apply filters and search whenever dependencies change
+  useEffect(() => {
+    if (!emergencies.length) {
+      setFilteredEmergencies([])
+      return
+    }
+
+    let filtered = [...emergencies]
+
+    // Apply status filter
+    if (statusFilter.length > 0) {
+      filtered = filtered.filter((e) => statusFilter.includes(e.status))
+    }
+
+    // Apply type filter
+    if (typeFilter.length > 0) {
+      filtered = filtered.filter((e) => typeFilter.includes(e.type))
+    }
+
+    // Apply search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      filtered = filtered.filter(
+        (e) =>
+          e.title.toLowerCase().includes(query) ||
+          e.description.toLowerCase().includes(query) ||
+          (e.reporter?.name && e.reporter.name.toLowerCase().includes(query)) ||
+          (e.reporter_name && e.reporter_name.toLowerCase().includes(query)),
+      )
+    }
+
+    setFilteredEmergencies(filtered)
+  }, [emergencies, statusFilter, typeFilter, searchQuery])
+
   const fetchEmergencies = async (showLoading = true) => {
     if (showLoading) setLoading(true)
     try {
-      const response = await axios.get("/responder/emergencies")
-      // Filter emergencies based on active tab
-      let filtered = response.data.data || []
-
-      // Calculate statistics
-      const newStats: EmergencyStats = {
-        pending: 0,
-        verified: 0,
-        resolved: 0,
-        total: filtered.length,
-        byType: {
-          accident: 0,
-          fire: 0,
-          medical: 0,
-          security: 0,
-          other: 0,
-        },
-      }
-
-      filtered.forEach((e: Emergency) => {
-        // Count by status
-        if (e.status === "pending") newStats.pending++
-        else if (e.status === "verified") newStats.verified++
-        else if (e.status === "resolved") newStats.resolved++
-
-        // Count by type
-        if (e.type === "accident") newStats.byType.accident++
-        else if (e.type === "fire") newStats.byType.fire++
-        else if (e.type === "medical") newStats.byType.medical++
-        else if (e.type === "security") newStats.byType.security++
-        else newStats.byType.other++
-      })
-
-      setStats(newStats)
-
-      if (activeTab === "pending") {
-        filtered = filtered.filter((e: Emergency) => e.status === "pending")
-      } else if (activeTab === "verified") {
-        filtered = filtered.filter((e: Emergency) => e.status === "verified")
-      }
-
-      setEmergencies(filtered)
+      const response = await axios.get("/api/emergencies")
+      const data = response.data.data || []
+      setEmergencies(data)
     } catch (error) {
       console.error("Error fetching emergencies:", error)
       if (showLoading) {
@@ -158,11 +143,10 @@ export default function ResponderDashboard() {
     }
   }
 
-  // Update the verifyEmergency function to match the API endpoint
   const verifyEmergency = async (id: number) => {
     setLoading(true)
     try {
-      await axios.post(`/emergencies/${id}/verify`)
+      await axios.post(`/api/emergencies/${id}/verify`)
       toast({
         title: "Success",
         description: "Emergency verified successfully",
@@ -180,25 +164,37 @@ export default function ResponderDashboard() {
     }
   }
 
-  // Add the declineEmergency function
-  const declineEmergency = async (id: number) => {
+  const resolveEmergency = async (id: number) => {
     setLoading(true)
     try {
-      await axios.post(`/emergency/${id}/decline`)
+      await axios.post(`/api/emergencies/${id}/resolve`)
       toast({
         title: "Success",
-        description: "Emergency declined successfully",
+        description: "Emergency marked as resolved",
       })
       fetchEmergencies()
     } catch (error) {
-      console.error("Error declining emergency:", error)
+      console.error("Error resolving emergency:", error)
       toast({
         title: "Error",
-        description: "Failed to decline emergency",
+        description: "Failed to resolve emergency",
         variant: "destructive",
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleEmergencyClick = (emergency: Emergency) => {
+    setSelectedEmergency(emergency)
+    setIsDetailModalOpen(true)
+  }
+
+  const toggleExpand = (id: number) => {
+    if (expandedEmergencyId === id) {
+      setExpandedEmergencyId(null)
+    } else {
+      setExpandedEmergencyId(id)
     }
   }
 
@@ -268,459 +264,341 @@ export default function ResponderDashboard() {
     }
   }
 
-  const toggleExpand = (id: number) => {
-    setExpandedItems((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }))
-  }
-
-  const isExpanded = (id: number) => !!expandedItems[id]
-
-  // Remove EmergencyMap component and replace with location_url link
-  // Update the EmergencyDetailSheet component
-  const EmergencyDetailSheet = ({ emergency }: { emergency: Emergency }) => {
-    return (
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" size="sm" className="ml-auto">
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Details
-          </Button>
-        </SheetTrigger>
-        <SheetContent className="w-[90%] sm:w-[540px] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2 flex-wrap">
-              {emergency.title}
-              {getStatusBadge(emergency.status)}
-            </SheetTitle>
-            <SheetDescription>Emergency ID: {emergency.id}</SheetDescription>
-          </SheetHeader>
-
-          <div className="mt-6 space-y-6">
-            {emergency.photo_url && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">Photo</h4>
-                <img
-                  src={getImageUrl(emergency.photo_url) || "/placeholder.svg"}
-                  alt={`Emergency: ${emergency.title}`}
-                  className="w-full h-60 object-cover rounded-md"
-                />
-              </div>
-            )}
-
-            <div>
-              <h4 className="text-sm font-medium mb-2">Description</h4>
-              <p className="text-sm text-muted-foreground">{emergency.description}</p>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-medium mb-2">Emergency Details</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  {getEmergencyTypeIcon(emergency.type)}
-                  <span className="text-muted-foreground">Emergency Type</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Reported: {formatDate(emergency.created_at)}</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <div>
-                    <p className="text-muted-foreground">Location:</p>
-                    {emergency.location_link ? (
-                      <p className="text-muted-foreground">
-                        <a
-                          href={emergency.location_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary underline"
-                        >
-                          View on Google Maps
-                        </a>
-                      </p>
-                    ) : (
-                      <p className="text-muted-foreground">Location information not available</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t pt-4">
-              <h4 className="text-sm font-medium mb-2">Reporter Information</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{emergency.reporter.name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{emergency.reporter.email}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Reporter ID: {emergency.reporter.id}</span>
-                </div>
-              </div>
-            </div>
-
-            {emergency.status === "pending" && (
-              <div className="border-t pt-4 space-y-2">
-                <Button onClick={() => verifyEmergency(emergency.id)} className="w-full" disabled={loading}>
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Verify Emergency
-                </Button>
-                <Button
-                  onClick={() => declineEmergency(emergency.id)}
-                  variant="destructive"
-                  className="w-full"
-                  disabled={loading}
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Decline Emergency
-                </Button>
-              </div>
-            )}
-          </div>
-        </SheetContent>
-      </Sheet>
-    )
-  }
-
-  // Component for the emergency type card in the overview
-  const EmergencyTypeCard = ({
-    icon,
-    title,
-    count,
-    total,
-  }: {
-    icon: React.ReactNode
-    title: string
-    count: number
-    total: number
-  }) => {
-    const percentage = total > 0 ? Math.round((count / total) * 100) : 0
-
-    return (
-      <Card className="overflow-hidden">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-primary/10 p-3 rounded-full">{icon}</div>
-            <div className="flex-1">
-              <h3 className="font-medium text-lg">{title}</h3>
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-2xl font-bold">{count}</p>
-                <p className="text-sm text-muted-foreground">{percentage}%</p>
-              </div>
-              <Progress value={percentage} className="h-2 mt-2" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
-    <div className="container py-6 md:py-10 px-4">
-      <h1 className="text-2xl md:text-3xl font-bold mb-6">Responder Dashboard</h1>
+    <div className="container py-6 md:py-10">
+      <h1 className="text-3xl font-bold mb-6">Responder Dashboard</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="verified">Verified</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="map">Emergency Map</TabsTrigger>
+          <TabsTrigger value="list">Emergency List</TabsTrigger>
+          <TabsTrigger value="verified">Verified Emergencies</TabsTrigger>
         </TabsList>
 
-        {/* Remove map from the map tab and replace with a list view */}
-        {/* Replace map tab with overview dashboard */}
-        <TabsContent value="overview" className="mt-6">
+        <div className="flex items-center justify-between mt-4 mb-2">
+          <div className="flex items-center space-x-2">
+            <div className="relative w-64">
+              <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search emergencies..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="ml-2">
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filter
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <div className="p-2">
+                  <h4 className="mb-2 text-sm font-medium">Status</h4>
+                  <DropdownMenuCheckboxItem
+                    checked={statusFilter.includes("pending")}
+                    onCheckedChange={(checked) => {
+                      setStatusFilter(
+                        checked ? [...statusFilter, "pending"] : statusFilter.filter((s) => s !== "pending"),
+                      )
+                    }}
+                  >
+                    Pending
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={statusFilter.includes("verified")}
+                    onCheckedChange={(checked) => {
+                      setStatusFilter(
+                        checked ? [...statusFilter, "verified"] : statusFilter.filter((s) => s !== "verified"),
+                      )
+                    }}
+                  >
+                    Verified
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={statusFilter.includes("resolved")}
+                    onCheckedChange={(checked) => {
+                      setStatusFilter(
+                        checked ? [...statusFilter, "resolved"] : statusFilter.filter((s) => s !== "resolved"),
+                      )
+                    }}
+                  >
+                    Resolved
+                  </DropdownMenuCheckboxItem>
+                </div>
+                <div className="p-2 border-t">
+                  <h4 className="mb-2 text-sm font-medium">Type</h4>
+                  <DropdownMenuCheckboxItem
+                    checked={typeFilter.includes("fire")}
+                    onCheckedChange={(checked) => {
+                      setTypeFilter(checked ? [...typeFilter, "fire"] : typeFilter.filter((t) => t !== "fire"))
+                    }}
+                  >
+                    Fire
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={typeFilter.includes("accident")}
+                    onCheckedChange={(checked) => {
+                      setTypeFilter(checked ? [...typeFilter, "accident"] : typeFilter.filter((t) => t !== "accident"))
+                    }}
+                  >
+                    Accident
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={typeFilter.includes("medical")}
+                    onCheckedChange={(checked) => {
+                      setTypeFilter(checked ? [...typeFilter, "medical"] : typeFilter.filter((t) => t !== "medical"))
+                    }}
+                  >
+                    Medical
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={typeFilter.includes("security")}
+                    onCheckedChange={(checked) => {
+                      setTypeFilter(checked ? [...typeFilter, "security"] : typeFilter.filter((t) => t !== "security"))
+                    }}
+                  >
+                    Security
+                  </DropdownMenuCheckboxItem>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <Button variant="outline" size="sm" onClick={() => fetchEmergencies()} disabled={loading}>
+            Refresh
+          </Button>
+        </div>
+
+        <TabsContent value="map" className="mt-2">
           <Card>
             <CardHeader>
-              <CardTitle>Emergency Overview</CardTitle>
-              <CardDescription>Summary of all reported emergencies in your area</CardDescription>
+              <CardTitle>Real-time Emergency Map</CardTitle>
+              <CardDescription>View all reported emergencies on the map</CardDescription>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="flex justify-center py-8">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+              <EmergencyMap emergencies={filteredEmergencies} height="600px" onMarkerClick={handleEmergencyClick} />
+
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                  <span className="text-sm">Fire</span>
                 </div>
-              ) : (
-                <div className="space-y-8">
-                  {/* Status summary cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Card className="bg-yellow-50">
-                      <CardContent className="p-6">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="text-sm font-medium text-yellow-800">Pending</p>
-                            <h3 className="text-3xl font-bold text-yellow-900">{stats.pending}</h3>
-                          </div>
-                          <div className="h-12 w-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                            <AlertCircle className="h-6 w-6 text-yellow-600" />
-                          </div>
-                        </div>
-                        <p className="text-xs text-yellow-700 mt-2">Emergencies awaiting verification</p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-blue-50">
-                      <CardContent className="p-6">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="text-sm font-medium text-blue-800">Verified</p>
-                            <h3 className="text-3xl font-bold text-blue-900">{stats.verified}</h3>
-                          </div>
-                          <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                            <CheckCircle className="h-6 w-6 text-blue-600" />
-                          </div>
-                        </div>
-                        <p className="text-xs text-blue-700 mt-2">Emergencies you've verified</p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="bg-green-50">
-                      <CardContent className="p-6">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="text-sm font-medium text-green-800">Resolved</p>
-                            <h3 className="text-3xl font-bold text-green-900">{stats.resolved}</h3>
-                          </div>
-                          <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
-                            <CheckCircle className="h-6 w-6 text-green-600" />
-                          </div>
-                        </div>
-                        <p className="text-xs text-green-700 mt-2">Emergencies that have been resolved</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Emergency types breakdown */}
-                  <div>
-                    <h3 className="text-lg font-medium mb-4">Emergency Types</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <EmergencyTypeCard
-                        icon={<AlertTriangle className="h-6 w-6 text-amber-600" />}
-                        title="Accidents"
-                        count={stats.byType.accident}
-                        total={stats.total}
-                      />
-                      <EmergencyTypeCard
-                        icon={<Flame className="h-6 w-6 text-red-600" />}
-                        title="Fires"
-                        count={stats.byType.fire}
-                        total={stats.total}
-                      />
-                      <EmergencyTypeCard
-                        icon={<Stethoscope className="h-6 w-6 text-green-600" />}
-                        title="Medical"
-                        count={stats.byType.medical}
-                        total={stats.total}
-                      />
-                      <EmergencyTypeCard
-                        icon={<Shield className="h-6 w-6 text-blue-600" />}
-                        title="Security"
-                        count={stats.byType.security}
-                        total={stats.total}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Recent emergencies */}
-                  <div>
-                    <h3 className="text-lg font-medium mb-4">Recent Emergencies</h3>
-                    <div className="space-y-4">
-                      {emergencies.slice(0, 3).map((emergency) => (
-                        <Card key={emergency.id} className="overflow-hidden">
-                          <CardContent className="p-4">
-                            <div className="flex flex-col gap-2">
-                              {emergency.photo_url && (
-                                <div className="mb-2">
-                                  <img
-                                    src={getImageUrl(emergency.photo_url) || "/placeholder.svg"}
-                                    alt={`Emergency: ${emergency.title}`}
-                                    className="w-full h-32 object-cover rounded-md"
-                                  />
-                                </div>
-                              )}
-                              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                <h3 className="font-medium">{emergency.title}</h3>
-                                {getStatusBadge(emergency.status)}
-                                {getEmergencyTypeIcon(emergency.type)}
-                              </div>
-                              <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{emergency.description}</p>
-                              <div className="flex items-center text-xs text-muted-foreground">
-                                <Clock className="h-3 w-3 mr-1" />
-                                {formatDate(emergency.created_at)}
-                              </div>
-                              <div className="flex items-center text-xs text-muted-foreground">
-                                <MapPin className="h-3 w-3 mr-1" />
-                                {emergency.location_link ? (
-                                  <a
-                                    href={emergency.location_link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-primary hover:underline"
-                                  >
-                                    View Location
-                                  </a>
-                                ) : (
-                                  "Location not available"
-                                )}
-                              </div>
-                              <div className="mt-2">
-                                <EmergencyDetailSheet emergency={emergency} />
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-
-                      {emergencies.length > 3 && (
-                        <Button variant="outline" className="w-full" onClick={() => setActiveTab("pending")}>
-                          View All Emergencies
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-orange-500 mr-2"></div>
+                  <span className="text-sm">Accident</span>
                 </div>
-              )}
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                  <span className="text-sm">Medical</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                  <span className="text-sm">Security</span>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full border-2 border-white bg-gray-500 mr-2"></div>
+                  <span className="text-sm">Pending</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full border-2 border-blue-500 bg-gray-500 mr-2"></div>
+                  <span className="text-sm">Verified</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full border-2 border-green-500 bg-gray-500 mr-2"></div>
+                  <span className="text-sm">Resolved</span>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="pending" className="mt-6">
+        <TabsContent value="list" className="mt-2">
           <Card>
             <CardHeader>
-              <CardTitle>Pending Emergencies</CardTitle>
-              <CardDescription>Review and verify reported emergencies in your area</CardDescription>
+              <CardTitle>All Emergencies</CardTitle>
+              <CardDescription>Review and manage reported emergencies in your area</CardDescription>
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {loading && filteredEmergencies.length === 0 ? (
                 <div className="flex justify-center py-8">
                   <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
                 </div>
-              ) : emergencies.length === 0 ? (
+              ) : filteredEmergencies.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <CheckCircle className="mx-auto h-12 w-12 mb-4 text-muted-foreground" />
-                  <p>No pending emergencies to verify.</p>
+                  <AlertCircle className="mx-auto h-12 w-12 mb-4 text-muted-foreground" />
+                  <p>No emergencies found matching your criteria.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {emergencies.map((emergency) => (
+                  {filteredEmergencies.map((emergency) => (
                     <Collapsible
                       key={emergency.id}
-                      open={isExpanded(emergency.id)}
-                      onOpenChange={() => toggleExpand(emergency.id)}
+                      open={expandedEmergencyId === emergency.id}
+                      onOpenChange={() => {}}
                       className="border rounded-lg overflow-hidden"
                     >
                       <div className="p-4">
-                        <div className="flex items-start justify-between flex-wrap gap-2">
-                          <div className="flex-1 min-w-[200px]">
-                            <div className="flex items-center gap-2 mb-2 flex-wrap">
-                              <h3 className="font-medium">{emergency.title}</h3>
-                              {getStatusBadge(emergency.status)}
-                              {getEmergencyTypeIcon(emergency.type)}
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{emergency.description}</p>
-                            <div className="flex items-center text-xs text-muted-foreground mb-1">
-                              <Clock className="h-3 w-3 mr-1" />
-                              {formatDate(emergency.created_at)}
-                            </div>
-                            <div className="flex items-center text-xs text-muted-foreground">
-                              <User className="h-3 w-3 mr-1" />
-                              Reported by: {emergency.reporter.name}
-                            </div>
-                          </div>
+                        <div className="flex justify-between items-start mb-2">
                           <div className="flex items-center gap-2">
                             <CollapsibleTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                {isExpanded(emergency.id) ? (
+                              <Button variant="ghost" size="sm" className="p-1 h-auto">
+                                {expandedEmergencyId === emergency.id ? (
                                   <ChevronUp className="h-4 w-4" />
                                 ) : (
                                   <ChevronDown className="h-4 w-4" />
                                 )}
-                                <span className="sr-only">Toggle details</span>
                               </Button>
                             </CollapsibleTrigger>
-                            <EmergencyDetailSheet emergency={emergency} />
+                            <h3 className="font-medium">{emergency.title}</h3>
                           </div>
+                          <div className="flex items-center gap-2">
+                            {getEmergencyTypeIcon(emergency.type)}
+                            {getStatusBadge(emergency.status)}
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row md:items-center justify-between mt-2 text-sm">
+                          <div className="flex items-center text-muted-foreground mb-2 md:mb-0">
+                            <Clock className="h-3.5 w-3.5 mr-1" />
+                            {formatDate(emergency.created_at)}
+                          </div>
+
+                          <div className="flex items-center text-muted-foreground">
+                            <User className="h-3.5 w-3.5 mr-1" />
+                            Reported by: {emergency.reporter?.name || emergency.reporter_name || "Anonymous"}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center text-xs text-muted-foreground mt-2">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          Location: {emergency.coordinates?.latitude.toFixed(4)},{" "}
+                          {emergency.coordinates?.longitude.toFixed(4)}
+                        </div>
+
+                        <div className="flex gap-2 mt-4">
+                          <Button
+                            onClick={() => handleEmergencyClick(emergency)}
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                          >
+                            View Details
+                          </Button>
+
+                          {emergency.status === "pending" && (
+                            <Button
+                              onClick={() => verifyEmergency(emergency.id)}
+                              size="sm"
+                              className="flex-1"
+                              disabled={loading}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Verify
+                            </Button>
+                          )}
+
+                          {emergency.status === "verified" && (
+                            <Button
+                              onClick={() => resolveEmergency(emergency.id)}
+                              size="sm"
+                              className="flex-1 bg-green-600 hover:bg-green-700"
+                              disabled={loading}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Resolve
+                            </Button>
+                          )}
                         </div>
                       </div>
 
                       <CollapsibleContent>
-                        <div className="px-4 pb-4 pt-2 border-t">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <h4 className="text-sm font-medium mb-2">Emergency Details</h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-start gap-2">
-                                  <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                                  <div>
-                                    <p className="text-muted-foreground">Location:</p>
-                                    {emergency.location_link ? (
-                                      <a
-                                        href={emergency.location_link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-primary hover:underline"
-                                      >
-                                        View on Google Maps
-                                      </a>
-                                    ) : (
-                                      <p className="text-muted-foreground">Location information not available</p>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div>
-                              <h4 className="text-sm font-medium mb-2">Reporter Information</h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <User className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">{emergency.reporter.name}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Mail className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">{emergency.reporter.email}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">Reporter ID: {emergency.reporter.id}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
+                        <div className="border-t p-4 bg-muted/30">
                           {emergency.photo_url && (
-                            <div className="mt-4">
-                              <h4 className="text-sm font-medium mb-2">Photo</h4>
+                            <div className="mb-4">
                               <img
-                                src={getImageUrl(emergency.photo_url) || "/placeholder.svg"}
+                                src={emergency.photo_url || "/placeholder.svg"}
                                 alt={`Emergency: ${emergency.title}`}
-                                className="w-full h-40 object-cover rounded-md"
+                                className="w-full h-48 object-cover rounded-md"
                               />
                             </div>
                           )}
 
-                          {/* Update the pending tab to include decline button */}
-                          <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                            <Button onClick={() => verifyEmergency(emergency.id)} className="flex-1" disabled={loading}>
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Verify Emergency
-                            </Button>
-                            <Button
-                              onClick={() => declineEmergency(emergency.id)}
-                              variant="destructive"
-                              className="flex-1"
-                              disabled={loading}
-                            >
-                              <XCircle className="h-4 w-4 mr-2" />
-                              Decline Emergency
-                            </Button>
+                          <div className="space-y-4">
+                            <div>
+                              <h4 className="text-sm font-medium mb-1">Description</h4>
+                              <p className="text-sm text-muted-foreground">{emergency.description}</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <h4 className="text-sm font-medium mb-1">Reporter Details</h4>
+                                <div className="space-y-1">
+                                  <p className="text-sm">
+                                    <span className="text-muted-foreground">Name:</span>{" "}
+                                    {emergency.reporter?.name || emergency.reporter_name || "Anonymous"}
+                                  </p>
+                                  {emergency.reporter?.email && (
+                                    <p className="text-sm flex items-center">
+                                      <Mail className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                                      {emergency.reporter.email}
+                                    </p>
+                                  )}
+                                  {emergency.reporter?.phone && (
+                                    <p className="text-sm flex items-center">
+                                      <Phone className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                                      {emergency.reporter.phone}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div>
+                                <h4 className="text-sm font-medium mb-1">Emergency Status</h4>
+                                <div className="space-y-1">
+                                  {emergency.verified_by && (
+                                    <p className="text-sm">
+                                      <span className="text-muted-foreground">Verified by:</span>{" "}
+                                      {emergency.verified_by}
+                                    </p>
+                                  )}
+                                  {emergency.resolved_by && (
+                                    <p className="text-sm">
+                                      <span className="text-muted-foreground">Resolved by:</span>{" "}
+                                      {emergency.resolved_by}
+                                    </p>
+                                  )}
+                                  {emergency.updated_at && (
+                                    <p className="text-sm flex items-center">
+                                      <Clock className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                                      Last updated: {formatDate(emergency.updated_at)}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div>
+                              <Button
+                                onClick={() =>
+                                  window.open(
+                                    `https://www.google.com/maps/dir/?api=1&destination=${emergency.coordinates.latitude},${emergency.coordinates.longitude}`,
+                                    "_blank",
+                                  )
+                                }
+                                variant="outline"
+                                size="sm"
+                                className="w-full mt-2"
+                              >
+                                <MapPin className="h-4 w-4 mr-2" />
+                                Get Directions
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </CollapsibleContent>
@@ -732,137 +610,82 @@ export default function ResponderDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="verified" className="mt-6">
+        <TabsContent value="verified" className="mt-2">
           <Card>
             <CardHeader>
               <CardTitle>Verified Emergencies</CardTitle>
               <CardDescription>View emergencies you have verified</CardDescription>
             </CardHeader>
             <CardContent>
-              {loading ? (
+              {loading && filteredEmergencies.filter((e) => e.status === "verified").length === 0 ? (
                 <div className="flex justify-center py-8">
                   <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
                 </div>
-              ) : emergencies.length === 0 ? (
+              ) : filteredEmergencies.filter((e) => e.status === "verified").length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <AlertCircle className="mx-auto h-12 w-12 mb-4 text-muted-foreground" />
-                  <p>You haven&apos;t verified any emergencies yet.</p>
+                  <p>No verified emergencies found.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {emergencies.map((emergency) => (
-                    <Collapsible
-                      key={emergency.id}
-                      open={isExpanded(emergency.id)}
-                      onOpenChange={() => toggleExpand(emergency.id)}
-                      className="border rounded-lg overflow-hidden"
-                    >
-                      <div className="p-4">
-                        <div className="flex items-start justify-between flex-wrap gap-2">
-                          <div className="flex-1 min-w-[200px]">
-                            <div className="flex items-center gap-2 mb-2 flex-wrap">
-                              <h3 className="font-medium">{emergency.title}</h3>
-                              {getStatusBadge(emergency.status)}
-                              {getEmergencyTypeIcon(emergency.type)}
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{emergency.description}</p>
-                            <div className="flex items-center text-xs text-muted-foreground mb-1">
-                              <Clock className="h-3 w-3 mr-1" />
-                              {formatDate(emergency.created_at)}
-                            </div>
-                            <div className="flex items-center text-xs text-muted-foreground">
-                              <User className="h-3 w-3 mr-1" />
-                              Reported by: {emergency.reporter.name}
-                            </div>
+                  {filteredEmergencies
+                    .filter((e) => e.status === "verified")
+                    .map((emergency) => (
+                      <div key={emergency.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-medium">{emergency.title}</h3>
+                          {getEmergencyTypeIcon(emergency.type)}
+                        </div>
+                        {emergency.photo_url && (
+                          <div className="mb-3">
+                            <img
+                              src={emergency.photo_url || "/placeholder.svg"}
+                              alt={`Emergency: ${emergency.title}`}
+                              className="w-full h-40 object-cover rounded-md"
+                            />
                           </div>
-                          <div className="flex items-center gap-2">
-                            <CollapsibleTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                {isExpanded(emergency.id) ? (
-                                  <ChevronUp className="h-4 w-4" />
-                                ) : (
-                                  <ChevronDown className="h-4 w-4" />
-                                )}
-                                <span className="sr-only">Toggle details</span>
-                              </Button>
-                            </CollapsibleTrigger>
-                            <EmergencyDetailSheet emergency={emergency} />
-                          </div>
+                        )}
+                        <p className="text-sm text-muted-foreground mb-2">{emergency.description}</p>
+                        <div className="flex items-center text-xs text-muted-foreground mb-2">
+                          <Clock className="h-3 w-3 mr-1" />
+                          {formatDate(emergency.created_at)}
+                        </div>
+                        <div className="flex items-center text-xs text-muted-foreground mb-4">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          Location: {emergency.coordinates?.latitude.toFixed(4)},{" "}
+                          {emergency.coordinates?.longitude.toFixed(4)}
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                          <Button onClick={() => handleEmergencyClick(emergency)} variant="outline" className="flex-1">
+                            View Details
+                          </Button>
+                          <Button
+                            onClick={() => resolveEmergency(emergency.id)}
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                            disabled={loading}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Mark as Resolved
+                          </Button>
                         </div>
                       </div>
-
-                      <CollapsibleContent>
-                        <div className="px-4 pb-4 pt-2 border-t">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <h4 className="text-sm font-medium mb-2">Emergency Details</h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-start gap-2">
-                                  <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                                  <div>
-                                    <p className="text-muted-foreground">Location:</p>
-                                    {emergency.location_link ? (
-                                      <a
-                                        href={emergency.location_link}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-primary hover:underline"
-                                      >
-                                        View on Google Maps
-                                      </a>
-                                    ) : (
-                                      <p className="text-muted-foreground">Location information not available</p>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div>
-                              <h4 className="text-sm font-medium mb-2">Reporter Information</h4>
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <User className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">{emergency.reporter.name}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Mail className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">{emergency.reporter.email}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                                  <span className="text-muted-foreground">Reporter ID: {emergency.reporter.id}</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {emergency.photo_url && (
-                            <div className="mt-4">
-                              <h4 className="text-sm font-medium mb-2">Photo</h4>
-                              <img
-                                src={getImageUrl(emergency.photo_url) || "/placeholder.svg"}
-                                alt={`Emergency: ${emergency.title}`}
-                                className="w-full h-40 object-cover rounded-md"
-                              />
-                            </div>
-                          )}
-
-                          <div className="mt-4">
-                            <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
-                              Verified by you
-                            </Badge>
-                          </div>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  ))}
+                    ))}
                 </div>
               )}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Emergency Detail Modal */}
+      <EmergencyDetailModal
+        emergency={selectedEmergency}
+        open={isDetailModalOpen}
+        onOpenChange={setIsDetailModalOpen}
+        onVerify={verifyEmergency}
+        onResolve={resolveEmergency}
+        onRefresh={fetchEmergencies}
+      />
     </div>
   )
 }

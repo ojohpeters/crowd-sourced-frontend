@@ -10,8 +10,8 @@ type User = {
   email?: string
   phone?: string
   role: "reporter" | "responder" | "admin"
-  is_admin?: number
-  isApproved?: number
+  is_admin?: boolean | number
+  isApproved?: boolean | number
 } | null
 
 type AuthContextType = {
@@ -21,6 +21,8 @@ type AuthContextType = {
   register: (userData: RegisterData) => Promise<void>
   logout: () => void
   error: string | null
+  isAdmin: boolean
+  isApproved: boolean
 }
 
 type RegisterData = {
@@ -31,6 +33,13 @@ type RegisterData = {
   role: "reporter" | "responder"
 }
 
+// Helper function to normalize boolean values
+const normalizeBoolean = (value: boolean | number | undefined): boolean => {
+  if (value === undefined) return false
+  if (typeof value === "boolean") return value
+  return value === 1
+}
+
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
@@ -38,6 +47,8 @@ const AuthContext = createContext<AuthContextType>({
   register: async () => {},
   logout: () => {},
   error: null,
+  isAdmin: false,
+  isApproved: false,
 })
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -45,6 +56,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+
+  // Computed properties that handle both boolean and number values
+  const isAdmin = normalizeBoolean(user?.is_admin)
+  const isApproved = normalizeBoolean(user?.isApproved)
 
   useEffect(() => {
     // Check if user is logged in on initial load
@@ -68,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserProfile = async (token: string) => {
     try {
-      const response = await axios.get("/user", {
+      const response = await axios.get("/api/user", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -85,11 +100,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  // Update the login function to match the API response structure
   const login = async (email: string, password: string) => {
     setError(null)
     try {
-      const response = await axios.post("/login", { email, password })
+      const response = await axios.post("/api/login", { email, password })
 
       localStorage.setItem("token", response.data.token)
       localStorage.setItem("user", JSON.stringify(response.data.user))
@@ -106,11 +120,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  // Update the register function to match the API response structure
   const register = async (userData: RegisterData) => {
     setError(null)
     try {
-      const response = await axios.post("/register", userData)
+      const response = await axios.post("/api/register", userData)
 
       if (response.data.token) {
         localStorage.setItem("token", response.data.token)
@@ -154,7 +167,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, error }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        login,
+        register,
+        logout,
+        error,
+        isAdmin,
+        isApproved,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   )
 }
 

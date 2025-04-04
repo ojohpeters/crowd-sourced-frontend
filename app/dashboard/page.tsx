@@ -9,7 +9,7 @@ import AdminDashboard from "@/components/dashboard/admin-dashboard"
 import LoadingSpinner from "@/components/loading-spinner"
 
 export default function DashboardPage() {
-  const { user, loading } = useAuth()
+  const { user, loading, isAdmin } = useAuth()
 
   useEffect(() => {
     if (!loading && !user) {
@@ -25,13 +25,19 @@ export default function DashboardPage() {
     return null // Will redirect in useEffect
   }
 
-  // Render different dashboard based on user role and is_admin flag
-  if (user.is_admin === 1) {
+  // Render different dashboard based on user role
+  // Use isAdmin helper instead of directly checking user.is_admin
+  if (isAdmin) {
     return <AdminDashboard />
-  } else if (user.role === "responder") {
-    return <ResponderDashboard />
-  } else {
-    return <ReporterDashboard />
+  }
+
+  switch (user.role) {
+    case "reporter":
+      return <ReporterDashboard />
+    case "responder":
+      return <ResponderDashboard />
+    default:
+      return <div>Unknown user role</div>
   }
 }
 

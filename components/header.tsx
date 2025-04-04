@@ -4,9 +4,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
 import { useState, useEffect } from "react"
-import { Menu, X, AlertTriangle, User, Sun, Moon } from "lucide-react"
+import { Menu, X, AlertTriangle, User } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
-import { useTheme } from "next-themes"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +19,16 @@ export default function Header() {
   const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { user, logout } = useAuth()
-  const { theme, setTheme } = useTheme()
+
+  // Helper function to normalize boolean values
+  const normalizeBoolean = (value: boolean | number | undefined): boolean => {
+    if (value === undefined) return false
+    if (typeof value === "boolean") return value
+    return value === 1
+  }
+
+  const isAdmin = user ? normalizeBoolean(user.is_admin) : false
+  const isApproved = user ? normalizeBoolean(user.isApproved) : false
 
   // Close mobile menu when path changes
   useEffect(() => {
@@ -33,7 +41,7 @@ export default function Header() {
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
             <AlertTriangle className="h-6 w-6 text-red-500" />
-            <span className="text-xl font-bold">CrowdSourced</span>
+            <span className="text-xl font-bold">EmergencyResponse</span>
           </Link>
         </div>
 
@@ -96,30 +104,12 @@ export default function Header() {
               </Link>
             </>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
         </nav>
 
         {/* Mobile Menu Button */}
-        <div className="flex items-center gap-2 md:hidden">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-          <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-        </div>
+        <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
+          {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
       </div>
 
       {/* Mobile Navigation */}
