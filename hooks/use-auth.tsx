@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserProfile = async (token: string) => {
     try {
-      const response = await axios.get("/api/user", {
+      const response = await axios.get("/user", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -118,7 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     setError(null)
     try {
-      const response = await axios.post("/api/login", { email, password })
+      const response = await axios.post("/login", { email, password })
 
       const userData = response.data.user
       localStorage.setItem("token", response.data.token)
@@ -144,7 +144,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = async (userData: RegisterData) => {
     setError(null)
     try {
-      const response = await axios.post("/api/register", userData)
+      const response = await axios.post("/register", userData)
 
       if (response.data.token) {
         localStorage.setItem("token", response.data.token)
@@ -175,7 +175,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       // Call the logout API endpoint
-      await axios.post("/api/logout")
+      await axios.post("/logout")
     } catch (error) {
       console.error("Error during logout:", error)
     } finally {
