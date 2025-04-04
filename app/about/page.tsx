@@ -31,11 +31,11 @@ export default function AboutPage() {
 
           <section>
             <h2 className="text-2xl font-bold mb-6">How It Works</h2>
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 md:gap-6 md:grid-cols-2">
               <Card className="overflow-hidden transition-all duration-300 hover:shadow-md">
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  <div className="bg-red-100 p-2 rounded-full">
-                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                <CardHeader className="flex flex-row items-center gap-3 md:gap-4 pb-2">
+                  <div className="bg-red-100 p-2 rounded-full flex-shrink-0">
+                    <AlertTriangle className="h-5 w-5 md:h-6 md:w-6 text-red-600" />
                   </div>
                   <div>
                     <CardTitle>Report</CardTitle>
@@ -43,7 +43,7 @@ export default function AboutPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Anyone can report an emergency through our platform. Simply provide details about the situation, its
                     location, and any relevant information that might help responders.
                   </p>
@@ -51,9 +51,9 @@ export default function AboutPage() {
               </Card>
 
               <Card className="overflow-hidden transition-all duration-300 hover:shadow-md">
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  <div className="bg-amber-100 p-2 rounded-full">
-                    <Shield className="h-6 w-6 text-amber-600" />
+                <CardHeader className="flex flex-row items-center gap-3 md:gap-4 pb-2">
+                  <div className="bg-amber-100 p-2 rounded-full flex-shrink-0">
+                    <Shield className="h-5 w-5 md:h-6 md:w-6 text-amber-600" />
                   </div>
                   <div>
                     <CardTitle>Verify</CardTitle>
@@ -61,7 +61,7 @@ export default function AboutPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Our network of verified responders quickly assess the situation to confirm the emergency and provide
                     additional information to emergency services.
                   </p>
@@ -69,9 +69,9 @@ export default function AboutPage() {
               </Card>
 
               <Card className="overflow-hidden transition-all duration-300 hover:shadow-md">
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  <div className="bg-green-100 p-2 rounded-full">
-                    <Stethoscope className="h-6 w-6 text-green-600" />
+                <CardHeader className="flex flex-row items-center gap-3 md:gap-4 pb-2">
+                  <div className="bg-green-100 p-2 rounded-full flex-shrink-0">
+                    <Stethoscope className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
                   </div>
                   <div>
                     <CardTitle>Respond</CardTitle>
@@ -79,7 +79,7 @@ export default function AboutPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Based on verification, appropriate emergency services are notified, and community responders can
                     provide immediate assistance while waiting for professional help.
                   </p>
@@ -87,9 +87,9 @@ export default function AboutPage() {
               </Card>
 
               <Card className="overflow-hidden transition-all duration-300 hover:shadow-md">
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  <div className="bg-blue-100 p-2 rounded-full">
-                    <Award className="h-6 w-6 text-blue-600" />
+                <CardHeader className="flex flex-row items-center gap-3 md:gap-4 pb-2">
+                  <div className="bg-blue-100 p-2 rounded-full flex-shrink-0">
+                    <Award className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
                   </div>
                   <div>
                     <CardTitle>Reward</CardTitle>
@@ -97,7 +97,7 @@ export default function AboutPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Users who contribute by reporting valid emergencies or helping with verification earn points that
                     can be redeemed for rewards, encouraging active community participation.
                   </p>
@@ -108,10 +108,10 @@ export default function AboutPage() {
 
           <section>
             <h2 className="text-2xl font-bold mb-6">Why Choose CrowdSourced?</h2>
-            <div className="grid gap-6 md:grid-cols-3">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-                <div className="bg-red-50 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-4">
-                  <Clock className="h-6 w-6 text-red-600" />
+            <div className="grid gap-4 md:gap-6 md:grid-cols-3">
+              <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+                <div className="bg-red-50 p-3 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center mb-4">
+                  <Clock className="h-5 w-5 md:h-6 md:w-6 text-red-600" />
                 </div>
                 <h3 className="font-semibold mb-2">Faster Response</h3>
                 <p className="text-sm text-muted-foreground">
@@ -119,9 +119,9 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-                <div className="bg-red-50 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-4">
-                  <Users className="h-6 w-6 text-red-600" />
+              <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+                <div className="bg-red-50 p-3 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center mb-4">
+                  <Users className="h-5 w-5 md:h-6 md:w-6 text-red-600" />
                 </div>
                 <h3 className="font-semibold mb-2">Community Powered</h3>
                 <p className="text-sm text-muted-foreground">
@@ -129,9 +129,9 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
-                <div className="bg-red-50 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-4">
-                  <CheckCircle className="h-6 w-6 text-red-600" />
+              <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+                <div className="bg-red-50 p-3 rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center mb-4">
+                  <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-red-600" />
                 </div>
                 <h3 className="font-semibold mb-2">Verified Information</h3>
                 <p className="text-sm text-muted-foreground">
