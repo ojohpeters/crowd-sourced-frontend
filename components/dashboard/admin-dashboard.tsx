@@ -33,7 +33,7 @@ type Responder = {
   phone: string
   status: string
   created_at: string
-  isApproved: number
+  isApproved: number | boolean
 }
 
 // Update the Emergency type to match the API response
@@ -528,7 +528,7 @@ export default function AdminDashboard() {
                         <Clock className="h-3 w-3 mr-1" />
                         Applied on: {formatDate(responder.created_at)}
                       </div>
-                      {responder.isApproved === 0 && (
+                      {responder.isApproved === false && (
                         <div className="flex flex-col sm:flex-row gap-2 mt-4">
                           <Button
                             onClick={() => approveResponder(responder.id)}
