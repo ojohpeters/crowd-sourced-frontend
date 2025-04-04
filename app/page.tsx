@@ -56,8 +56,7 @@ export default function Home() {
             <Button
               asChild
               size="lg"
-              variant="outline"
-              className="text-white border-white hover:bg-white/20 h-10 md:h-12 rounded-full"
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/50 px-6 md:px-8 h-10 md:h-12 rounded-full"
             >
               <Link href="/register?role=responder">Become a Responder</Link>
             </Button>
@@ -85,11 +84,11 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="relative z-10 bg-white py-16 md:py-20 px-4">
+      <section className="relative z-10 bg-white dark:bg-gray-900 py-16 md:py-20 px-4">
         <div className="container mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">How It Works</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold mb-4 dark:text-white">How It Works</h2>
+            <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Our platform connects community members, responders, and emergency services to create a faster, more
               effective emergency response system.
             </p>
@@ -103,14 +102,14 @@ export default function Home() {
                 1
               </div>
               {/* Line connector (hidden on mobile) */}
-              <div className="absolute top-8 left-1/2 w-0.5 h-full bg-gray-200 -translate-x-1/2 hidden md:block"></div>
+              <div className="absolute top-8 left-1/2 w-0.5 h-full bg-gray-200 dark:bg-gray-700 -translate-x-1/2 hidden md:block"></div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative z-20 h-full">
-                <div className="bg-red-50 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 mx-auto">
-                  <AlertTriangle className="h-7 w-7 text-red-500" />
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 relative z-20 h-full">
+                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 mx-auto">
+                  <AlertTriangle className="h-7 w-7 text-red-500 dark:text-red-400" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-center">Report an Emergency</h3>
-                <p className="text-gray-600 text-center">
+                <h3 className="text-xl font-semibold mb-3 text-center dark:text-white">Report an Emergency</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-center">
                   Use our mobile-friendly app to quickly report emergencies with location details and photos.
                 </p>
               </div>
@@ -123,14 +122,14 @@ export default function Home() {
                 2
               </div>
               {/* Line connector (hidden on mobile) */}
-              <div className="absolute top-8 left-1/2 w-0.5 h-full bg-gray-200 -translate-x-1/2 hidden md:block"></div>
+              <div className="absolute top-8 left-1/2 w-0.5 h-full bg-gray-200 dark:bg-gray-700 -translate-x-1/2 hidden md:block"></div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative z-20 h-full">
-                <div className="bg-amber-50 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 mx-auto">
-                  <Shield className="h-7 w-7 text-amber-500" />
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 relative z-20 h-full">
+                <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 mx-auto">
+                  <Shield className="h-7 w-7 text-amber-500 dark:text-amber-400" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-center">Responders Verify</h3>
-                <p className="text-gray-600 text-center">
+                <h3 className="text-xl font-semibold mb-3 text-center dark:text-white">Responders Verify</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-center">
                   Trained community responders verify and assess the emergency situation in real-time.
                 </p>
               </div>
@@ -143,12 +142,12 @@ export default function Home() {
                 3
               </div>
 
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative z-20 h-full">
-                <div className="bg-green-50 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 mx-auto">
-                  <Award className="h-7 w-7 text-green-500" />
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 relative z-20 h-full">
+                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-full w-16 h-16 flex items-center justify-center mb-4 mx-auto">
+                  <Award className="h-7 w-7 text-green-500 dark:text-green-400" />
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-center">Get Rewarded</h3>
-                <p className="text-gray-600 text-center">
+                <h3 className="text-xl font-semibold mb-3 text-center dark:text-white">Get Rewarded</h3>
+                <p className="text-gray-600 dark:text-gray-300 text-center">
                   Earn points for valid reports and climb the community leaderboard for your contributions.
                 </p>
               </div>
@@ -158,14 +157,16 @@ export default function Home() {
       </section>
 
       {/* Emergency Types Section */}
-      <section className="py-16 md:py-20 px-4 bg-gray-50">
+      <section className="py-16 md:py-20 px-4 bg-gray-50 dark:bg-gray-800">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-8 md:mb-12">Types of Emergencies We Handle</h2>
+          <h2 className="text-3xl font-bold text-center mb-8 md:mb-12 dark:text-white">
+            Types of Emergencies We Handle
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <EmergencyCard
               icon={
-                <div className="p-3 rounded-full bg-red-100">
-                  <Flame className="h-8 w-8 text-red-500" />
+                <div className="p-3 rounded-full bg-red-100 dark:bg-red-900/30">
+                  <Flame className="h-8 w-8 text-red-500 dark:text-red-400" />
                 </div>
               }
               title="Fire Emergencies"
@@ -174,8 +175,8 @@ export default function Home() {
             />
             <EmergencyCard
               icon={
-                <div className="p-3 rounded-full bg-amber-100">
-                  <AlertTriangle className="h-8 w-8 text-amber-500" />
+                <div className="p-3 rounded-full bg-amber-100 dark:bg-amber-900/30">
+                  <AlertTriangle className="h-8 w-8 text-amber-500 dark:text-amber-400" />
                 </div>
               }
               title="Accidents"
@@ -184,8 +185,8 @@ export default function Home() {
             />
             <EmergencyCard
               icon={
-                <div className="p-3 rounded-full bg-green-100">
-                  <Stethoscope className="h-8 w-8 text-green-500" />
+                <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/30">
+                  <Stethoscope className="h-8 w-8 text-green-500 dark:text-green-400" />
                 </div>
               }
               title="Medical Emergencies"
@@ -194,8 +195,8 @@ export default function Home() {
             />
             <EmergencyCard
               icon={
-                <div className="p-3 rounded-full bg-blue-100">
-                  <Shield className="h-8 w-8 text-blue-500" />
+                <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/30">
+                  <Shield className="h-8 w-8 text-blue-500 dark:text-blue-400" />
                 </div>
               }
               title="Security Incidents"
@@ -220,8 +221,7 @@ export default function Home() {
             <Button
               asChild
               size="lg"
-              variant="outline"
-              className="text-white border-white hover:bg-white/20 h-12 rounded-full"
+              className="bg-transparent hover:bg-white/20 text-white border border-white px-8 h-12 rounded-full"
             >
               <Link href="/about">Learn More</Link>
             </Button>
@@ -244,10 +244,12 @@ function EmergencyCard({
   color: "red" | "amber" | "green" | "blue"
 }) {
   const colorClasses = {
-    red: "bg-red-50 border-red-100 hover:border-red-200 hover:shadow-red-100/50",
-    amber: "bg-amber-50 border-amber-100 hover:border-amber-200 hover:shadow-amber-100/50",
-    green: "bg-green-50 border-green-100 hover:border-green-200 hover:shadow-green-100/50",
-    blue: "bg-blue-50 border-blue-100 hover:border-blue-200 hover:shadow-blue-100/50",
+    red: "bg-red-50 border-red-100 hover:border-red-200 hover:shadow-red-100/50 dark:bg-gray-800 dark:border-red-900/30 dark:hover:border-red-700",
+    amber:
+      "bg-amber-50 border-amber-100 hover:border-amber-200 hover:shadow-amber-100/50 dark:bg-gray-800 dark:border-amber-900/30 dark:hover:border-amber-700",
+    green:
+      "bg-green-50 border-green-100 hover:border-green-200 hover:shadow-green-100/50 dark:bg-gray-800 dark:border-green-900/30 dark:hover:border-green-700",
+    blue: "bg-blue-50 border-blue-100 hover:border-blue-200 hover:shadow-blue-100/50 dark:bg-gray-800 dark:border-blue-900/30 dark:hover:border-blue-700",
   }
 
   return (
@@ -258,8 +260,8 @@ function EmergencyCard({
       )}
     >
       <div className="mb-3 md:mb-4 flex items-center justify-center">{icon}</div>
-      <h3 className="text-lg md:text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600 text-sm md:text-base">{description}</p>
+      <h3 className="text-lg md:text-xl font-semibold mb-2 dark:text-white">{title}</h3>
+      <p className="text-gray-600 dark:text-gray-300 text-sm md:text-base">{description}</p>
     </div>
   )
 }
