@@ -1,7 +1,7 @@
 import axios from "axios"
 
 // Update the API base URL to match the documentation
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/api"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
 
 const instance = axios.create({
   baseURL: API_BASE_URL,
@@ -52,7 +52,7 @@ export const getImageUrl = (imagePath: string | null): string => {
   if (!imagePath) return "/placeholder.svg"
 
   // Get the base URL without the /api part
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000/api"
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL 
   const baseUrl = apiBaseUrl.replace(/\/api$/, "")
 
   // Return the full image URL
