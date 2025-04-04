@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import {
   AlertCircle,
@@ -20,8 +20,6 @@ import {
 } from "lucide-react"
 import axios from "@/lib/axios"
 import { useToast } from "@/hooks/use-toast"
-import EmergencyMap from "@/components/emergency-map"
-import EmergencyDetailModal from "@/components/emergency-detail-modal"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   DropdownMenu,
@@ -30,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import { getEmergencyTypeData, getStatusData, formatDate } from "@/lib/utils"
 
 // Helper function to normalize boolean values
 const normalizeBoolean = (value: boolean | number | undefined): boolean => {
@@ -66,13 +65,11 @@ type Emergency = {
 }
 
 export default function ResponderDashboard() {
-  const [activeTab, setActiveTab] = useState("map")
+  const [activeTab, setActiveTab] = useState("list")
   const [emergencies, setEmergencies] = useState<Emergency[]>([])
   const [filteredEmergencies, setFilteredEmergencies] = useState<Emergency[]>([])
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedEmergency, setSelectedEmergency] = useState<Emergency | null>(null)
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [expandedEmergencyId, setExpandedEmergencyId] = useState<number | null>(null)
   const [statusFilter, setStatusFilter] = useState<string[]>(["pending", "verified"])
   const [typeFilter, setTypeFilter] = useState<string[]>(["fire", "accident", "medical", "security", "other"])
@@ -185,11 +182,6 @@ export default function ResponderDashboard() {
     }
   }
 
-  const handleEmergencyClick = (emergency: Emergency) => {
-    setSelectedEmergency(emergency)
-    setIsDetailModalOpen(true)
-  }
-
   const toggleExpand = (id: number) => {
     if (expandedEmergencyId === id) {
       setExpandedEmergencyId(null)
@@ -198,70 +190,24 @@ export default function ResponderDashboard() {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
+  // Render emergency type badge
+  const renderEmergencyTypeBadge = (type: string) => {
+    const typeData = getEmergencyTypeData(type)
+    return (
+      <Badge variant="outline" className={typeData.className}>
+        {typeData.label}
+      </Badge>
+    )
   }
 
-  const getEmergencyTypeIcon = (type: string) => {
-    switch (type) {
-      case "accident":
-        return (
-          <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200">
-            Accident
-          </Badge>
-        )
-      case "fire":
-        return (
-          <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
-            Fire
-          </Badge>
-        )
-      case "medical":
-        return (
-          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
-            Medical
-          </Badge>
-        )
-      case "security":
-        return (
-          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
-            Security
-          </Badge>
-        )
-      default:
-        return <Badge variant="outline">{type}</Badge>
-    }
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return (
-          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">
-            Pending
-          </Badge>
-        )
-      case "verified":
-        return (
-          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">
-            Verified
-          </Badge>
-        )
-      case "resolved":
-        return (
-          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">
-            Resolved
-          </Badge>
-        )
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
+  // Render status badge
+  const renderStatusBadge = (status: string) => {
+    const statusData = getStatusData(status)
+    return (
+      <Badge variant="outline" className={statusData.className}>
+        {statusData.label}
+      </Badge>
+    )
   }
 
   return (
@@ -269,8 +215,7 @@ export default function ResponderDashboard() {
       <h1 className="text-3xl font-bold mb-6">Responder Dashboard</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="map">Emergency Map</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="list">Emergency List</TabsTrigger>
           <TabsTrigger value="verified">Verified Emergencies</TabsTrigger>
         </TabsList>
@@ -372,52 +317,6 @@ export default function ResponderDashboard() {
           </Button>
         </div>
 
-        <TabsContent value="map" className="mt-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Real-time Emergency Map</CardTitle>
-              <CardDescription>View all reported emergencies on the map</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <EmergencyMap emergencies={filteredEmergencies} height="600px" onMarkerClick={handleEmergencyClick} />
-
-              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
-                  <span className="text-sm">Fire</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-orange-500 mr-2"></div>
-                  <span className="text-sm">Accident</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                  <span className="text-sm">Medical</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
-                  <span className="text-sm">Security</span>
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full border-2 border-white bg-gray-500 mr-2"></div>
-                  <span className="text-sm">Pending</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full border-2 border-blue-500 bg-gray-500 mr-2"></div>
-                  <span className="text-sm">Verified</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full border-2 border-green-500 bg-gray-500 mr-2"></div>
-                  <span className="text-sm">Resolved</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="list" className="mt-2">
           <Card>
             <CardHeader>
@@ -440,7 +339,7 @@ export default function ResponderDashboard() {
                     <Collapsible
                       key={emergency.id}
                       open={expandedEmergencyId === emergency.id}
-                      onOpenChange={() => {}}
+                      onOpenChange={() => toggleExpand(emergency.id)}
                       className="border rounded-lg overflow-hidden"
                     >
                       <div className="p-4">
@@ -458,8 +357,8 @@ export default function ResponderDashboard() {
                             <h3 className="font-medium">{emergency.title}</h3>
                           </div>
                           <div className="flex items-center gap-2">
-                            {getEmergencyTypeIcon(emergency.type)}
-                            {getStatusBadge(emergency.status)}
+                            {renderEmergencyTypeBadge(emergency.type)}
+                            {renderStatusBadge(emergency.status)}
                           </div>
                         </div>
 
@@ -482,15 +381,6 @@ export default function ResponderDashboard() {
                         </div>
 
                         <div className="flex gap-2 mt-4">
-                          <Button
-                            onClick={() => handleEmergencyClick(emergency)}
-                            variant="outline"
-                            size="sm"
-                            className="flex-1"
-                          >
-                            View Details
-                          </Button>
-
                           {emergency.status === "pending" && (
                             <Button
                               onClick={() => verifyEmergency(emergency.id)}
@@ -634,7 +524,7 @@ export default function ResponderDashboard() {
                       <div key={emergency.id} className="border rounded-lg p-4">
                         <div className="flex justify-between items-start mb-2">
                           <h3 className="font-medium">{emergency.title}</h3>
-                          {getEmergencyTypeIcon(emergency.type)}
+                          {renderEmergencyTypeBadge(emergency.type)}
                         </div>
                         {emergency.photo_url && (
                           <div className="mb-3">
@@ -656,9 +546,6 @@ export default function ResponderDashboard() {
                           {emergency.coordinates?.longitude.toFixed(4)}
                         </div>
                         <div className="flex gap-2 mt-4">
-                          <Button onClick={() => handleEmergencyClick(emergency)} variant="outline" className="flex-1">
-                            View Details
-                          </Button>
                           <Button
                             onClick={() => resolveEmergency(emergency.id)}
                             className="flex-1 bg-green-600 hover:bg-green-700"
@@ -676,16 +563,6 @@ export default function ResponderDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* Emergency Detail Modal */}
-      <EmergencyDetailModal
-        emergency={selectedEmergency}
-        open={isDetailModalOpen}
-        onOpenChange={setIsDetailModalOpen}
-        onVerify={verifyEmergency}
-        onResolve={resolveEmergency}
-        onRefresh={fetchEmergencies}
-      />
     </div>
   )
 }

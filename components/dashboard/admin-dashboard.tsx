@@ -81,7 +81,7 @@ export default function AdminDashboard() {
     setLoading(true)
     try {
       const response = await axios.get("/api/admin/responders")
-      setResponders(response.data)
+      setResponders(Array.isArray(response.data) ? response.data : [])
     } catch (error) {
       console.error("Error fetching responders:", error)
       toast({
@@ -89,6 +89,7 @@ export default function AdminDashboard() {
         description: "Failed to load responders",
         variant: "destructive",
       })
+      setResponders([]) // Ensure it's an empty array on error
     } finally {
       setLoading(false)
     }
@@ -98,7 +99,7 @@ export default function AdminDashboard() {
     setLoading(true)
     try {
       const response = await axios.get("/api/admin/emergencies")
-      setEmergencies(response.data.data || []) // Changed from response.data.emergencies to response.data.data
+      setEmergencies(Array.isArray(response.data.data) ? response.data.data : [])
     } catch (error) {
       console.error("Error fetching emergencies:", error)
       toast({
@@ -106,6 +107,7 @@ export default function AdminDashboard() {
         description: "Failed to load emergencies",
         variant: "destructive",
       })
+      setEmergencies([]) // Ensure it's an empty array on error
     } finally {
       setLoading(false)
     }
@@ -115,7 +117,7 @@ export default function AdminDashboard() {
     setLoading(true)
     try {
       const response = await axios.get("/api/leaderboard")
-      setLeaderboard(response.data.top_users)
+      setLeaderboard(Array.isArray(response.data.top_users) ? response.data.top_users : [])
     } catch (error) {
       console.error("Error fetching leaderboard:", error)
       toast({
@@ -123,6 +125,7 @@ export default function AdminDashboard() {
         description: "Failed to load leaderboard",
         variant: "destructive",
       })
+      setLeaderboard([]) // Ensure it's an empty array on error
     } finally {
       setLoading(false)
     }
@@ -132,7 +135,7 @@ export default function AdminDashboard() {
     setLoading(true)
     try {
       const response = await axios.get("/api/admin/reward-claims")
-      setRewardClaims(response.data.claims)
+      setRewardClaims(Array.isArray(response.data.claims) ? response.data.claims : [])
     } catch (error) {
       console.error("Error fetching reward claims:", error)
       toast({
@@ -140,6 +143,7 @@ export default function AdminDashboard() {
         description: "Failed to load reward claims",
         variant: "destructive",
       })
+      setRewardClaims([]) // Ensure it's an empty array on error
     } finally {
       setLoading(false)
     }
@@ -289,7 +293,7 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {responders.map((responder) => (
+                  {(Array.isArray(responders) ? responders : []).map((responder) => (
                     <div key={responder.id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-medium">{responder.name}</h3>
@@ -349,7 +353,7 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {emergencies.map((emergency) => (
+                  {(Array.isArray(emergencies) ? emergencies : []).map((emergency) => (
                     <div key={emergency.id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-medium">{emergency.title}</h3>
@@ -401,7 +405,7 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {leaderboard.map((entry, index) => (
+                  {(Array.isArray(leaderboard) ? leaderboard : []).map((entry, index) => (
                     <div key={entry.id} className="border rounded-lg p-4 flex justify-between items-center">
                       <div className="flex items-center">
                         <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold mr-3">
@@ -438,7 +442,7 @@ export default function AdminDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {rewardClaims.map((claim) => (
+                  {(Array.isArray(rewardClaims) ? rewardClaims : []).map((claim) => (
                     <div key={claim.id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-medium">Claim by {claim.user_name}</h3>
