@@ -80,7 +80,7 @@ export default function AdminDashboard() {
   const fetchResponders = async () => {
     setLoading(true)
     try {
-      const response = await axios.get("/api/admin/responders")
+      const response = await axios.get("/admin/responders")
       setResponders(Array.isArray(response.data) ? response.data : [])
     } catch (error) {
       console.error("Error fetching responders:", error)
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
   const fetchEmergencies = async () => {
     setLoading(true)
     try {
-      const response = await axios.get("/api/admin/emergencies")
+      const response = await axios.get("/admin/emergencies")
       setEmergencies(Array.isArray(response.data.data) ? response.data.data : [])
     } catch (error) {
       console.error("Error fetching emergencies:", error)
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
   const fetchLeaderboard = async () => {
     setLoading(true)
     try {
-      const response = await axios.get("/api/leaderboard")
+      const response = await axios.get("/leaderboard")
       setLeaderboard(Array.isArray(response.data.top_users) ? response.data.top_users : [])
     } catch (error) {
       console.error("Error fetching leaderboard:", error)
@@ -134,7 +134,7 @@ export default function AdminDashboard() {
   const fetchRewardClaims = async () => {
     setLoading(true)
     try {
-      const response = await axios.get("/api/admin/reward-claims")
+      const response = await axios.get("/admin/reward-claims")
       setRewardClaims(Array.isArray(response.data.claims) ? response.data.claims : [])
     } catch (error) {
       console.error("Error fetching reward claims:", error)
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
   const approveResponder = async (id: number) => {
     setLoading(true)
     try {
-      await axios.post(`/api/admin/responders/${id}/approve`)
+      await axios.post(`/admin/responders/${id}/approve`)
       toast({
         title: "Success",
         description: "Responder approved successfully",
@@ -173,7 +173,7 @@ export default function AdminDashboard() {
   const declineResponder = async (id: number) => {
     setLoading(true)
     try {
-      await axios.post(`/api/admin/responders/${id}/decline`)
+      await axios.post(`/admin/responders/${id}/decline`)
       toast({
         title: "Success",
         description: "Responder application declined",
@@ -194,7 +194,7 @@ export default function AdminDashboard() {
   const processRewardClaim = async (id: number) => {
     setLoading(true)
     try {
-      await axios.post(`/api/process-reward/${id}`)
+      await axios.post(`/process-reward/${id}`)
       toast({
         title: "Success",
         description: "Reward claim processed successfully",
