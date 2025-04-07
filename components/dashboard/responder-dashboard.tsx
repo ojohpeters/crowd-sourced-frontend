@@ -124,7 +124,7 @@ export default function ResponderDashboard() {
   const fetchEmergencies = async (showLoading = true) => {
     if (showLoading) setLoading(true)
     try {
-      const response = await axios.get("/api/emergencies")
+      const response = await axios.get("/emergencies")
       const data = response.data.data || []
       setEmergencies(data)
     } catch (error) {
@@ -144,7 +144,7 @@ export default function ResponderDashboard() {
   const verifyEmergency = async (id: number) => {
     setLoading(true)
     try {
-      await axios.post(`/api/emergencies/${id}/verify`)
+      await axios.post(`/emergency/${id}/verify`)
       toast({
         title: "Success",
         description: "Emergency verified successfully",
@@ -165,7 +165,7 @@ export default function ResponderDashboard() {
   const declineEmergency = async (id: number) => {
     setLoading(true)
     try {
-      await axios.post(`/api/emergencies/${id}/decline`)
+      await axios.post(`/emergency/${id}/decline`)
       toast({
         title: "Success",
         description: "Emergency declined successfully",
@@ -186,7 +186,7 @@ export default function ResponderDashboard() {
   const resolveEmergency = async (id: number) => {
     setLoading(true)
     try {
-      await axios.post(`/api/emergencies/${id}/resolve`)
+      await axios.post(`/emergencies/${id}/resolve`)
       toast({
         title: "Success",
         description: "Emergency marked as resolved",
