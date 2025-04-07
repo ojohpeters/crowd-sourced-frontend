@@ -1,7 +1,7 @@
 import type React from "react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { AlertTriangle, Flame, Stethoscope, Shield } from "lucide-react"
+import { AlertTriangle, Flame, Stethoscope, Shield } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -26,7 +26,11 @@ export default function Home() {
             <Button asChild size="lg" className="bg-red-600 hover:bg-red-700">
               <Link href="/register">Join as Reporter</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="text-white border-white hover:bg-white/20">
+            <Button 
+              asChild 
+              size="lg" 
+              className="bg-white text-red-600 hover:bg-gray-100 hover:text-red-700 border-2 border-white"
+            >
               <Link href="/register?role=responder">Become a Responder</Link>
             </Button>
           </div>
@@ -138,4 +142,3 @@ function StepCard({
     </div>
   )
 }
-

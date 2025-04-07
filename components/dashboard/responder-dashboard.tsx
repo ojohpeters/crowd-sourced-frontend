@@ -10,6 +10,7 @@ import {
   MapPin,
   Clock,
   CheckCircle,
+  XCircle,
   ChevronDown,
   ChevronUp,
   User,
@@ -123,7 +124,7 @@ export default function ResponderDashboard() {
   const fetchEmergencies = async (showLoading = true) => {
     if (showLoading) setLoading(true)
     try {
-      const response = await axios.get("/responder/emergencies")
+      const response = await axios.get("/api/emergencies")
       const data = response.data.data || []
       setEmergencies(data)
     } catch (error) {
@@ -143,7 +144,7 @@ export default function ResponderDashboard() {
   const verifyEmergency = async (id: number) => {
     setLoading(true)
     try {
-      await axios.post(`/emergencies/${id}/verify`)
+      await axios.post(`/api/emergencies/${id}/verify`)
       toast({
         title: "Success",
         description: "Emergency verified successfully",
@@ -161,10 +162,31 @@ export default function ResponderDashboard() {
     }
   }
 
+  const declineEmergency = async (id: number) => {
+    setLoading(true)
+    try {
+      await axios.post(`/api/emergencies/${id}/decline`)
+      toast({
+        title: "Success",
+        description: "Emergency declined successfully",
+      })
+      fetchEmergencies()
+    } catch (error) {
+      console.error("Error declining emergency:", error)
+      toast({
+        title: "Error",
+        description: "Failed to decline emergency",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const resolveEmergency = async (id: number) => {
     setLoading(true)
     try {
-      await axios.post(`/emergencies/${id}/resolve`)
+      await axios.post(`/api/emergencies/${id}/resolve`)
       toast({
         title: "Success",
         description: "Emergency marked as resolved",
@@ -220,9 +242,10 @@ export default function ResponderDashboard() {
           <TabsTrigger value="verified">Verified Emergencies</TabsTrigger>
         </TabsList>
 
-        <div className="flex items-center justify-between mt-4 mb-2">
-          <div className="flex items-center space-x-2">
-            <div className="relative w-64">
+        {/* Responsive search and filter section */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4 mb-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder="Search emergencies..."
@@ -234,7 +257,7 @@ export default function ResponderDashboard() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="ml-2">
+                <Button variant="outline" size="sm">
                   <Filter className="h-4 w-4 mr-2" />
                   Filter
                 </Button>
@@ -380,8 +403,8 @@ export default function ResponderDashboard() {
                           {emergency.coordinates?.longitude.toFixed(4)}
                         </div>
 
-                        <div className="flex gap-2 mt-4">
-                          {emergency.status === "pending" && (
+                        {emergency.status === "pending" && (
+                          <div className="flex flex-col sm:flex-row gap-2 mt-4">
                             <Button
                               onClick={() => verifyEmergency(emergency.id)}
                               size="sm"
@@ -391,9 +414,21 @@ export default function ResponderDashboard() {
                               <CheckCircle className="h-4 w-4 mr-2" />
                               Verify
                             </Button>
-                          )}
+                            <Button
+                              onClick={() => declineEmergency(emergency.id)}
+                              size="sm"
+                              variant="outline"
+                              className="flex-1 border-red-500 text-red-500 hover:bg-red-50"
+                              disabled={loading}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              Decline
+                            </Button>
+                          </div>
+                        )}
 
-                          {emergency.status === "verified" && (
+                        {emergency.status === "verified" && (
+                          <div className="flex gap-2 mt-4">
                             <Button
                               onClick={() => resolveEmergency(emergency.id)}
                               size="sm"
@@ -403,8 +438,8 @@ export default function ResponderDashboard() {
                               <CheckCircle className="h-4 w-4 mr-2" />
                               Resolve
                             </Button>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
 
                       <CollapsibleContent>
