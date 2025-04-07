@@ -183,27 +183,6 @@ export default function ResponderDashboard() {
     }
   }
 
-  const resolveEmergency = async (id: number) => {
-    setLoading(true)
-    try {
-      await axios.post(`/emergencies/${id}/resolve`)
-      toast({
-        title: "Success",
-        description: "Emergency marked as resolved",
-      })
-      fetchEmergencies()
-    } catch (error) {
-      console.error("Error resolving emergency:", error)
-      toast({
-        title: "Error",
-        description: "Failed to resolve emergency",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const toggleExpand = (id: number) => {
     if (expandedEmergencyId === id) {
       setExpandedEmergencyId(null)
@@ -426,20 +405,6 @@ export default function ResponderDashboard() {
                             </Button>
                           </div>
                         )}
-
-                        {emergency.status === "verified" && (
-                          <div className="flex gap-2 mt-4">
-                            <Button
-                              onClick={() => resolveEmergency(emergency.id)}
-                              size="sm"
-                              className="flex-1 bg-green-600 hover:bg-green-700"
-                              disabled={loading}
-                            >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Resolve
-                            </Button>
-                          </div>
-                        )}
                       </div>
 
                       <CollapsibleContent>
@@ -490,12 +455,6 @@ export default function ResponderDashboard() {
                                     <p className="text-sm">
                                       <span className="text-muted-foreground">Verified by:</span>{" "}
                                       {emergency.verified_by}
-                                    </p>
-                                  )}
-                                  {emergency.resolved_by && (
-                                    <p className="text-sm">
-                                      <span className="text-muted-foreground">Resolved by:</span>{" "}
-                                      {emergency.resolved_by}
                                     </p>
                                   )}
                                   {emergency.updated_at && (
@@ -579,16 +538,6 @@ export default function ResponderDashboard() {
                           <MapPin className="h-3 w-3 mr-1" />
                           Location: {emergency.coordinates?.latitude.toFixed(4)},{" "}
                           {emergency.coordinates?.longitude.toFixed(4)}
-                        </div>
-                        <div className="flex gap-2 mt-4">
-                          <Button
-                            onClick={() => resolveEmergency(emergency.id)}
-                            className="flex-1 bg-green-600 hover:bg-green-700"
-                            disabled={loading}
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Mark as Resolved
-                          </Button>
                         </div>
                       </div>
                     ))}
