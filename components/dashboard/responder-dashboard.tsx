@@ -123,7 +123,7 @@ export default function ResponderDashboard() {
   const fetchEmergencies = async (showLoading = true) => {
     if (showLoading) setLoading(true)
     try {
-      const response = await axios.get("/emergencies")
+      const response = await axios.get("/responder/emergencies")
       const data = response.data.data || []
       setEmergencies(data)
     } catch (error) {
