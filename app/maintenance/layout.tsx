@@ -1,5 +1,6 @@
 import type React from "react"
 import { ThemeProvider } from "@/components/theme-provider"
+import "../globals.css"
 
 export const metadata = {
   title: "CRITICAL WARNING - Domain Termination Imminent",
@@ -13,7 +14,7 @@ export default function MaintenanceLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>
+      <body className="overflow-hidden">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
         </ThemeProvider>

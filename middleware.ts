@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
     const maintenanceUrl = new URL("/maintenance", request.url)
 
     // Use redirect instead of rewrite for more reliable behavior
-    return NextResponse.redirect(maintenanceUrl)
+    return NextResponse.redirect(maintenanceUrl, { status: 307 })
   }
 
   // If maintenance mode is disabled but user is on maintenance page, redirect to home
