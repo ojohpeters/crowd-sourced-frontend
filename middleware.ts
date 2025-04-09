@@ -8,39 +8,32 @@ export function middleware(request: NextRequest) {
   // Get the path from the URL
   const path = request.nextUrl.pathname
 
-  // If maintenance mode is enabled and the path is not already the maintenance page
-  if (isMaintenanceMode && !path.startsWith("/maintenance")) {
-    // Allow static assets to be loaded
-    if (path.includes("/_next") || path.includes("/favicon.ico")) {
-      return NextResponse.next()
-    }
+  // If we're in maintenance mode and not already on the maintenance page
+  if (isMaintenanceMode && path !== "/maintenance") {
+    // Create a new URL for the maintenance page
+    const maintenanceUrl = new URL("/maintenance", request.url)
 
-    // Redirect to the maintenance page
-    const url = request.nextUrl.clone()
-    url.pathname = "/maintenance"
-    return NextResponse.rewrite(url)
+    // Use redirect instead of rewrite for more reliable behavior
+    return NextResponse.redirect(maintenanceUrl)
   }
 
   // If maintenance mode is disabled but user is on maintenance page, redirect to home
   if (!isMaintenanceMode && path === "/maintenance") {
-    const url = request.nextUrl.clone()
-    url.pathname = "/"
-    return NextResponse.redirect(url)
+    const homeUrl = new URL("/", request.url)
+    return NextResponse.redirect(homeUrl)
   }
 
   return NextResponse.next()
 }
 
-// Configure the middleware to run on specific paths
+// Configure the middleware to run on all paths
 export const config = {
   matcher: [
     /*
-     * Match all request paths except:
-     * 1. /api routes
-     * 2. /_next (Next.js internals)
-     * 3. /fonts (inside public)
-     * 4. /favicon.ico, /sitemap.xml (static files)
+     * Match all request paths except for:
+     * - _next (Next.js internals)
+     * - public files (favicon, images, etc)
      */
-    "/((?!api|_next|fonts|favicon.ico|sitemap.xml).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:jpg|jpeg|gif|png|svg|ico)).*)",
   ],
 }
